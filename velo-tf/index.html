@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Velo Tf — build Terraform files visually. Free, offline, no backend." />
+  <title>Velo Tf — Build Terraform visually</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0A0E1A" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">🌙</button>
+
+  <header class="site-header">
+    <h1>Velo <span class="accent">Tf</span></h1>
+    <p class="tagline">Build Terraform visually. Free. Offline.</p>
+  </header>
+
+  <div class="disclaimer">
+    Educational tool. Generated code targets free providers only (local, random, null, time, tls, docker). Always review before running.
+  </div>
+
+  <main class="container">
+
+    <div id="statusBar" class="status-bar info" role="status" aria-live="polite">Ready. Pick a resource to begin.</div>
+
+    <section class="skills">
+      <div class="skills-head">
+        <span>Skills unlocked</span>
+        <span id="skillsCount">0 / 6</span>
+      </div>
+      <div class="progress"><div id="skillsBar" class="progress-fill"></div></div>
+    </section>
+
+    <section class="block">
+      <h2 class="block-title"><span class="step-badge">1</span> Pick resources</h2>
+      <div id="chips" class="chips"></div>
+      <div class="row">
+        <button id="surpriseBtn" class="action-btn secondary">🎲 Surprise me</button>
+        <select id="recipeSelect" class="recipe-select" aria-label="Starter recipe">
+          <option value="">Starter recipes…</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2 class="block-title"><span class="step-badge">2</span> Configure</h2>
+      <div id="formArea" class="detail-card">
+        <p class="muted">Select a resource above to configure it.</p>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2 class="block-title"><span class="step-badge">3</span> Live preview</h2>
+      <div class="file-tabs" id="fileTabs"></div>
+      <pre id="preview" class="code-card" aria-live="polite"></pre>
+      <div class="row">
+        <button id="copyBtn" class="action-btn primary">Copy</button>
+        <button id="downloadTfBtn" class="action-btn secondary">Download .tf</button>
+        <button id="downloadZipBtn" class="action-btn secondary">Download ZIP</button>
+        <button id="shareBtn" class="action-btn secondary">Share link</button>
+      </div>
+    </section>
+
+    <section class="stats">
+      <div class="stat-card"><span class="stat-num" id="statResources">0</span><span class="stat-label">Resources</span></div>
+      <div class="stat-card"><span class="stat-num" id="statFiles">0</span><span class="stat-label">Files</span></div>
+      <div class="stat-card"><span class="stat-num" id="statValid">—</span><span class="stat-label">Validation</span></div>
+    </section>
+
+    <section class="block">
+      <h2 class="block-title">Architecture map</h2>
+      <div id="archMap" class="arch-map"></div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <p>Velo Tf · MIT License · Built for learning Terraform</p>
+  </footer>
+
+  <button id="installBtn" class="install-btn" hidden>Install app</button>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/resources.js"></script>
+  <script src="js/recipes.js"></script>
+  <script src="js/highlight.js"></script>
+  <script src="js/generator.js"></script>
+  <script src="js/zip.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
