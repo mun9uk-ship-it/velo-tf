@@ -21,6 +21,7 @@
   const skillsCount = $("#skillsCount");
   const skillsBar   = $("#skillsBar");
   const archMapEl   = $("#archMap");
+  const activeChipControls = $("#activeChipControls");
 
   function toast(msg) {
     toastEl.textContent = msg;
@@ -49,13 +50,39 @@
 
   function renderChips() {
     chipsEl.innerHTML = "";
-    Object.values(RESOURCES).forEach((r) => {
+    activeChipControls.innerHTML = "";
+    
+    Object.values(RESOURCES).forEach((r, index) => {
       const b = document.createElement("button");
-      b.className = "chip";
+      const addedIdx = state.resources.findIndex(res => res.id === r.id);
+      const isActive = (addedIdx !== -1 && addedIdx === state.activeResourceIdx);
+      
+      b.className = "chip" + (isActive ? " active" : "");
       b.textContent = r.label;
-      b.addEventListener("click", () => addResource(r.id));
+      b.addEventListener("click", () => {
+        if (addedIdx !== -1) {
+          state.activeResourceIdx = addedIdx;
+          renderAll();
+        } else {
+          addResource(r.id);
+        }
+      });
       chipsEl.appendChild(b);
     });
+
+    // إضافة زر الحذف للشريحة النشطة
+    if (state.resources.length > 0) {
+      const deleteBtn = document.createElement("button");
+      deleteBtn.className = "delete-chip-btn";
+      deleteBtn.innerHTML = `🗑️ Delete ${RESOURCES[state.resources[state.activeResourceIdx].id].label}`;
+      deleteBtn.addEventListener("click", () => {
+        state.resources.splice(state.activeResourceIdx, 1);
+        state.activeResourceIdx = Math.max(0, state.activeResourceIdx - 1);
+        renderAll();
+        toast("Resource deleted");
+      });
+      activeChipControls.appendChild(deleteBtn);
+    }
   }
 
   function renderRecipes() {
@@ -94,14 +121,10 @@
     const r = state.resources[state.activeResourceIdx];
     const def = RESOURCES[r.id];
     
-    // إضافة زر الحذف هنا
     formArea.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-        <div>
-          <h3 style="margin-bottom: 0.2rem;">${def.label}</h3>
-          <p class="muted" style="margin-bottom: 0;">${def.desc}</p>
-        </div>
-        <button id="deleteResourceBtn" class="delete-btn">🗑️ Delete</button>
+      <div style="margin-bottom: 1rem;">
+        <h3 style="margin-bottom: 0.2rem;">${def.label}</h3>
+        <p class="muted" style="margin-bottom: 0;">${def.desc}</p>
       </div>
     `;
 
@@ -150,14 +173,6 @@
       g.appendChild(label);
       g.appendChild(input);
       formArea.appendChild(g);
-    });
-
-    // تفعيل زر الحذف
-    document.getElementById("deleteResourceBtn").addEventListener("click", () => {
-      state.resources.splice(state.activeResourceIdx, 1);
-      state.activeResourceIdx = Math.max(0, state.activeResourceIdx - 1);
-      renderAll();
-      toast("Resource deleted");
     });
   }
 
@@ -247,6 +262,7 @@
       state.activeFile = Object.keys(state.files)[0] || "main.tf";
     }
 
+    renderChips(); // تحديث الشرائح وزر الحذف
     renderForm();
     renderTabs();
     renderPreview();
@@ -383,7 +399,6 @@
       const ok = decodeState(hash.slice(4));
       if (ok) toast("Loaded shared configuration");
     }
-    // تم إزالة الكود الذي يضيف كلمة المرور تلقائياً
     renderAll();
     updateStatusForNetwork();
   }
