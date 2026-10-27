@@ -1,0 +1,13 @@
+# Mac System Files
+.DS_Store
+
+# Terraform State Files (Contains your generated passwords!)
+*.tfstate
+*.tfstate.backup
+
+# Terraform Plugins
+.terraform/
+.terraform.lock.hcl
+
+# Test Folders
+test/

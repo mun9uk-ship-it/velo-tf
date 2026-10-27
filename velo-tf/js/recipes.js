@@ -1,6 +1,5 @@
 /**
  * Velo Tf — starter recipes.
- * Each recipe seeds a list of resources + field overrides.
  */
 const RECIPES = {
   "random-password-vault": {
@@ -8,12 +7,6 @@ const RECIPES = {
     resources: [
       { id: "random_password", fields: { name: "vault_pw", length: 24 } },
       { id: "local_file",      fields: { name: "vault_file", filename: "${path.module}/vault.txt", content: "password stored here" } }
-    ]
-  },
-  "docker-nginx": {
-    label: "Docker nginx",
-    resources: [
-      { id: "docker_container", fields: { name: "web", image: "nginx:latest", ports: 8080 } }
     ]
   },
   "local-config-files": {

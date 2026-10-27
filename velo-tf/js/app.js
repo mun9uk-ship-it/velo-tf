@@ -1,17 +1,15 @@
 /**
- * Velo Tf — main app controller.
- * Keeps a single `state` object, re-renders on change.
+ * Velo TerraForm — main app controller.
  */
 (() => {
   const state = {
-    resources: [],            // [{ id, fields }]
+    resources: [],
     activeResourceIdx: 0,
     activeFile: "main.tf",
     files: {},
     unlockedTypes: new Set()
   };
 
-  // --- DOM refs ---
   const $ = (s) => document.querySelector(s);
   const chipsEl     = $("#chips");
   const formArea    = $("#formArea");
@@ -24,7 +22,6 @@
   const skillsBar   = $("#skillsBar");
   const archMapEl   = $("#archMap");
 
-  // --- Toast ---
   function toast(msg) {
     toastEl.textContent = msg;
     toastEl.classList.add("show");
@@ -32,7 +29,7 @@
     toast._t = setTimeout(() => toastEl.classList.remove("show"), 2000);
   }
 
-  // --- Theme ---
+  // Theme
   const themeToggle = $("#themeToggle");
   const storedTheme = localStorage.getItem("velo-tf-theme") || "dark";
   document.documentElement.dataset.theme = storedTheme;
@@ -44,14 +41,12 @@
     localStorage.setItem("velo-tf-theme", next);
   });
 
-  // --- Helpers ---
   function defaultFields(id) {
     const out = {};
     RESOURCES[id].fields.forEach(f => { out[f.name] = f.default; });
     return out;
   }
 
-  // --- Chips ---
   function renderChips() {
     chipsEl.innerHTML = "";
     Object.values(RESOURCES).forEach((r) => {
@@ -63,7 +58,6 @@
     });
   }
 
-  // --- Recipes ---
   function renderRecipes() {
     Object.entries(RECIPES).forEach(([key, r]) => {
       const opt = document.createElement("option");
@@ -85,7 +79,6 @@
     });
   }
 
-  // --- Add resource ---
   function addResource(id) {
     state.resources.push({ id, fields: defaultFields(id) });
     state.activeResourceIdx = state.resources.length - 1;
@@ -93,7 +86,6 @@
     renderAll();
   }
 
-  // --- Form ---
   function renderForm() {
     if (state.resources.length === 0) {
       formArea.innerHTML = `<p class="muted">Select a resource above to configure it.</p>`;
@@ -129,8 +121,20 @@
 
       input.id = `f-${f.name}`;
       input.addEventListener("input", (e) => {
-        r.fields[f.name] = f.type === "number" ? Number(e.target.value) : e.target.value;
-        renderAll();
+        r.fields[f.name] = e.target.value; 
+        
+        state.files = Generator.buildAll(state);
+        const validation = Generator.validate(state);
+        renderTabs();
+        renderPreview();
+        renderStats(validation);
+        renderArchMap();
+        updateDynamicCommand(); // تحديث أمر الـ Terminal ديناميكياً
+        
+        statusBar.className = "status-bar " + (validation.errors.length ? "offline" : "success");
+        statusBar.textContent = validation.errors.length
+          ? validation.errors[0]
+          : validation.warnings[0] || "Looks good. Copy or download your files.";
       });
 
       g.appendChild(label);
@@ -139,7 +143,6 @@
     });
   }
 
-  // --- Preview ---
   function renderTabs() {
     fileTabsEl.innerHTML = "";
     Object.keys(state.files).forEach((name) => {
@@ -162,7 +165,6 @@
     previewEl.innerHTML = highlightHCL(code, explainFn);
   }
 
-  // --- Stats + skills ---
   function renderStats(validation) {
     $("#statResources").textContent = state.resources.length;
     $("#statFiles").textContent     = Object.keys(state.files).length;
@@ -174,7 +176,6 @@
     skillsBar.style.width = `${(unlocked / total) * 100}%`;
   }
 
-  // --- Architecture map ---
   function renderArchMap() {
     if (state.resources.length === 0) {
       archMapEl.innerHTML = `<p class="muted">Add resources to see the map.</p>`;
@@ -206,12 +207,25 @@
       </svg>`;
   }
 
-  // --- Regenerate everything ---
+  // دالة ذكية لتحديث أمر الـ Terminal بناءً على اسم المورد
+  function updateDynamicCommand() {
+    const rp = state.resources.find(r => r.id === "random_password");
+    const targetName = rp ? `${rp.fields.name}_password` : "db_password_password";
+    const dynamicCommand = `terraform output -raw ${targetName}; echo ""`;
+    
+    const outputCode = document.getElementById("dynamicOutputCommand");
+    const outputBtn = document.getElementById("copyDynamicOutput");
+    
+    if (outputCode && outputBtn) {
+      outputCode.textContent = dynamicCommand;
+      outputBtn.setAttribute("data-copy", dynamicCommand);
+    }
+  }
+
   function renderAll() {
     state.files = Generator.buildAll(state);
     const validation = Generator.validate(state);
 
-    // Keep active file valid
     if (!state.files[state.activeFile]) {
       state.activeFile = Object.keys(state.files)[0] || "main.tf";
     }
@@ -221,6 +235,7 @@
     renderPreview();
     renderStats(validation);
     renderArchMap();
+    updateDynamicCommand(); // استدعاء الدالة عند التحديث
 
     statusBar.className = "status-bar " + (validation.errors.length ? "offline" : "success");
     statusBar.textContent = validation.errors.length
@@ -228,11 +243,9 @@
       : validation.warnings[0] || "Looks good. Copy or download your files.";
   }
 
-  // --- Share link (encode/decode state in URL hash) ---
+  // --- Share link ---
   function encodeState() {
-    const payload = {
-      r: state.resources.map(r => ({ i: r.id, f: r.fields }))
-    };
+    const payload = { r: state.resources.map(r => ({ i: r.id, f: r.fields })) };
     return btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
   }
 
@@ -241,139 +254,122 @@
       const raw = decodeURIComponent(escape(atob(hash)));
       const data = JSON.parse(raw);
       if (!data || !Array.isArray(data.r)) return false;
-      state.resources = data.r
-        .filter(x => RESOURCES[x.i])
-        .map(x => ({
-          id: x.i,
-          fields: { ...defaultFields(x.i), ...(x.f || {}) }
-        }));
+      state.resources = data.r.filter(x => RESOURCES[x.i]).map(x => ({
+        id: x.i, fields: { ...defaultFields(x.i), ...(x.f || {}) }
+      }));
       state.resources.forEach(r => state.unlockedTypes.add(r.id));
       state.activeResourceIdx = 0;
       return true;
-    } catch (e) {
-      return false;
-    }
+    } catch (e) { return false; }
   }
 
-  // --- Copy current file ---
-  $("#copyBtn").addEventListener("click", async () => {
-    const code = state.files[state.activeFile] || "";
-    try {
-      await navigator.clipboard.writeText(code);
-      toast(`Copied ${state.activeFile}`);
-    } catch {
-      toast("Copy failed — select the text manually");
-    }
+  // Copy Buttons Logic
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const textToCopy = btn.getAttribute('data-copy');
+      try {
+        await navigator.clipboard.writeText(textToCopy);
+        toast("Command copied to clipboard!");
+      } catch {
+        toast("Failed to copy.");
+      }
+    });
   });
 
-  // --- Download .tf ---
+  // Buttons Action
+  $("#downloadZipBtn").addEventListener("click", () => {
+    const blob = Zip.build(state.files);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "velo-tf-config.zip"; a.click();
+    URL.revokeObjectURL(url);
+    toast("Downloaded ZIP");
+  });
+
   $("#downloadTfBtn").addEventListener("click", () => {
     const code = state.files[state.activeFile] || "";
     const blob = new Blob([code], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
-    a.download = state.activeFile;
-    a.click();
+    a.href = url; a.download = state.activeFile; a.click();
     URL.revokeObjectURL(url);
     toast(`Downloaded ${state.activeFile}`);
   });
 
-  // --- Download ZIP ---
-  $("#downloadZipBtn").addEventListener("click", () => {
-    const blob = Zip.build(state.files);
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "velo-tf-config.zip";
-    a.click();
-    URL.revokeObjectURL(url);
-    toast("Downloaded ZIP");
+  $("#copyBtn").addEventListener("click", async () => {
+    const code = state.files[state.activeFile] || "";
+    try { 
+      await navigator.clipboard.writeText(code); 
+      toast(`Copied ${state.activeFile}`); 
+    } catch { 
+      toast("Copy failed"); 
+    }
   });
 
-  // --- Share link ---
   $("#shareBtn").addEventListener("click", async () => {
     const hash = "#cfg=" + encodeState();
     const url = location.origin + location.pathname + hash;
-    try {
-      await navigator.clipboard.writeText(url);
-      toast("Share link copied");
-    } catch {
-      toast("Copy failed — URL is in the address bar");
+    try { 
+      await navigator.clipboard.writeText(url); 
+      toast("Share link copied"); 
+    } catch { 
+      toast("Copy failed"); 
     }
     history.replaceState(null, "", hash);
   });
 
-  // --- Surprise me ---
   $("#surpriseBtn").addEventListener("click", () => {
     const ids = Object.keys(RESOURCES);
-    const count = 1 + Math.floor(Math.random() * 3);
+    const count = 1 + Math.floor(Math.random() * 2);
     const picked = new Set();
     while (picked.size < count) picked.add(ids[Math.floor(Math.random() * ids.length)]);
-
-    state.resources = [...picked].map(id => ({
-      id,
-      fields: defaultFields(id)
-    }));
+    state.resources = [...picked].map(id => ({ id, fields: defaultFields(id) }));
     state.activeResourceIdx = 0;
     state.resources.forEach(r => state.unlockedTypes.add(r.id));
     renderAll();
     toast("Surprise! New random config");
   });
 
-  // --- Online/offline ---
   function updateStatusForNetwork() {
     if (!navigator.onLine) {
       statusBar.className = "status-bar offline";
-      statusBar.textContent = "You are offline — Velo Tf still works from cache.";
-    } else {
-      renderAll();
-    }
+      statusBar.textContent = "You are offline — Velo TerraForm still works from cache.";
+    } else { renderAll(); }
   }
   window.addEventListener("online", updateStatusForNetwork);
   window.addEventListener("offline", updateStatusForNetwork);
 
-  // --- PWA install ---
+  // PWA Install
   const installBtn = $("#installBtn");
   let deferredPrompt = null;
   window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    installBtn.hidden = false;
+    e.preventDefault(); deferredPrompt = e; installBtn.hidden = false;
   });
   installBtn.addEventListener("click", async () => {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
     await deferredPrompt.userChoice;
-    deferredPrompt = null;
-    installBtn.hidden = true;
+    deferredPrompt = null; installBtn.hidden = true;
   });
 
-  // --- Service worker ---
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
       navigator.serviceWorker.register("sw.js").catch(() => {});
     });
   }
 
-  // --- Init ---
   function init() {
     renderChips();
     renderRecipes();
-
-    // Load from share link if present
     const hash = location.hash.replace(/^#/, "");
     if (hash.startsWith("cfg=")) {
       const ok = decodeState(hash.slice(4));
       if (ok) toast("Loaded shared configuration");
     }
-
-    // Seed with one resource so preview isn't empty
     if (state.resources.length === 0) {
       state.resources.push({ id: "random_password", fields: defaultFields("random_password") });
       state.unlockedTypes.add("random_password");
     }
-
     renderAll();
     updateStatusForNetwork();
   }

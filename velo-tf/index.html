@@ -1,10 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Velo Tf — build Terraform files visually. Free, offline, no backend." />
-  <title>Velo Tf — Build Terraform visually</title>
+  <meta name="description" content="Velo TerraForm — build Terraform files visually. Free, offline, no backend." />
+  <title>Velo TerraForm — Build Terraform visually</title>
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#0A0E1A" />
   <link rel="stylesheet" href="css/style.css" />
@@ -14,12 +15,12 @@
   <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">🌙</button>
 
   <header class="site-header">
-    <h1>Velo <span class="accent">Tf</span></h1>
+    <h1>Velo <span class="accent">TerraForm</span></h1>
     <p class="tagline">Build Terraform visually. Free. Offline.</p>
   </header>
 
   <div class="disclaimer">
-    Educational tool. Generated code targets free providers only (local, random, null, time, tls, docker). Always review before running.
+    Educational tool. Generated code targets free providers only. Always review before running.
   </div>
 
   <main class="container">
@@ -29,7 +30,7 @@
     <section class="skills">
       <div class="skills-head">
         <span>Skills unlocked</span>
-        <span id="skillsCount">0 / 6</span>
+        <span id="skillsCount">0 / 5</span>
       </div>
       <div class="progress"><div id="skillsBar" class="progress-fill"></div></div>
     </section>
@@ -45,6 +46,62 @@
       </div>
     </section>
 
+    <!-- Deployment Workflow Section -->
+    <section class="block">
+      <h3 class="block-subtitle">DEPLOYMENT WORKFLOW · TERRAFORM</h3>
+      
+      <div class="instructions-card">
+        <div class="instruction-step">
+          <span class="step-badge">1</span>
+          <div>
+            <strong>Download <span class="highlight-all">ALL</span> .tf files</strong> 
+            <span class="step-text">Click the download button below to get your Terraform files before running.</span>
+          </div>
+        </div>
+        
+        <div class="instruction-step">
+          <span class="step-badge">2</span>
+          <div>
+            <strong>Run in Terminal</strong> 
+            <span class="step-text">Open your terminal, navigate to the folder, and initialize:</span>
+            <div class="code-snippet">
+              <code>terraform init</code>
+              <button class="copy-btn" data-copy="terraform init" aria-label="Copy command">📋</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="instruction-step">
+          <span class="step-badge">3</span>
+          <div>
+            <strong>Apply the code</strong> 
+            <span class="step-text">Create the resources (type <code>yes</code> to confirm):</span>
+            <div class="code-snippet">
+              <code>terraform apply</code>
+              <button class="copy-btn" data-copy="terraform apply" aria-label="Copy command">📋</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="instruction-step">
+          <span class="step-badge">4</span>
+          <div>
+            <strong>Get your output</strong> 
+            <span class="step-text">To see your generated password, run:</span>
+            <div class="code-snippet">
+              <code id="dynamicOutputCommand">terraform output -raw db_password_password; echo ""</code>
+              <button id="copyDynamicOutput" class="copy-btn" data-copy='terraform output -raw db_password_password; echo ""' aria-label="Copy command">📋</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="alert-box">
+        <span class="alert-icon">⚠</span>
+        <span><strong>Note:</strong> We generate the empty code blueprint. When you run it in your terminal via Terraform, it creates the actual resource and gives you the final result.</span>
+      </div>
+    </section>
+
     <section class="block">
       <h2 class="block-title"><span class="step-badge">2</span> Configure</h2>
       <div id="formArea" class="detail-card">
@@ -56,10 +113,11 @@
       <h2 class="block-title"><span class="step-badge">3</span> Live preview</h2>
       <div class="file-tabs" id="fileTabs"></div>
       <pre id="preview" class="code-card" aria-live="polite"></pre>
+      
       <div class="row">
-        <button id="copyBtn" class="action-btn primary">Copy</button>
+        <button id="downloadZipBtn" class="action-btn primary">Download ZIP</button>
         <button id="downloadTfBtn" class="action-btn secondary">Download .tf</button>
-        <button id="downloadZipBtn" class="action-btn secondary">Download ZIP</button>
+        <button id="copyBtn" class="action-btn secondary">Copy</button>
         <button id="shareBtn" class="action-btn secondary">Share link</button>
       </div>
     </section>
@@ -78,7 +136,7 @@
   </main>
 
   <footer class="site-footer">
-    <p>Velo Tf · MIT License · Built for learning Terraform</p>
+    <p>Velo TerraForm · MIT License · Built for learning Terraform</p>
   </footer>
 
   <button id="installBtn" class="install-btn" hidden>Install app</button>

@@ -1,15 +1,5 @@
 /**
  * Velo Tf — single source of truth for every Terraform resource we can generate.
- * Adding a new resource = add one entry here (and optionally a recipe).
- *
- * Entry shape:
- *  - id: stable key
- *  - label: chip label
- *  - desc: short human description (Explain mode + README)
- *  - provider: terraform provider name
- *  - fields: form fields
- *  - hcl: (ctx) => string of HCL body
- *  - explain: (line) => per-line explanation or null
  */
 const RESOURCES = {
   random_password: {
@@ -123,35 +113,6 @@ const RESOURCES = {
       if (line.includes("resource"))  return "Generates a private key managed by Terraform.";
       if (line.includes("algorithm")) return "RSA is the classic choice; ECDSA is smaller and faster.";
       if (line.includes("rsa_bits"))  return "Key size in bits. 2048 is the common minimum.";
-      return null;
-    }
-  },
-
-  docker_container: {
-    id: "docker_container",
-    label: "Docker container",
-    desc: "Runs a container on your local Docker daemon.",
-    provider: "docker",
-    fields: [
-      { name: "name", label: "Container name", type: "text", default: "nginx" },
-      { name: "image", label: "Image", type: "text", default: "nginx:latest" },
-      { name: "ports", label: "Host port", type: "number", default: 8080 }
-    ],
-    hcl: (c) => [
-      `resource "docker_container" "${c.name}" {`,
-      `  name  = "${c.name}"`,
-      `  image = "${c.image}"`,
-      `  ports {`,
-      `    internal = 80`,
-      `    external = ${c.ports}`,
-      `  }`,
-      `}`
-    ].join("\n"),
-    explain: (line) => {
-      if (line.includes("resource"))  return "Runs a Docker container.";
-      if (line.includes("image"))     return "The Docker image to pull and run.";
-      if (line.includes("internal"))  return "Port inside the container.";
-      if (line.includes("external"))  return "Port published on your host machine.";
       return null;
     }
   }
