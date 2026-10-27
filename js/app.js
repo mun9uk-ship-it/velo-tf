@@ -93,7 +93,17 @@
     }
     const r = state.resources[state.activeResourceIdx];
     const def = RESOURCES[r.id];
-    formArea.innerHTML = `<h3>${def.label}</h3><p class="muted">${def.desc}</p>`;
+    
+    // إضافة زر الحذف هنا
+    formArea.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div>
+          <h3 style="margin-bottom: 0.2rem;">${def.label}</h3>
+          <p class="muted" style="margin-bottom: 0;">${def.desc}</p>
+        </div>
+        <button id="deleteResourceBtn" class="delete-btn">🗑️ Delete</button>
+      </div>
+    `;
 
     def.fields.forEach((f) => {
       const g = document.createElement("div");
@@ -129,7 +139,7 @@
         renderPreview();
         renderStats(validation);
         renderArchMap();
-        updateDynamicCommand(); // تحديث أمر الـ Terminal ديناميكياً
+        updateDynamicCommand();
         
         statusBar.className = "status-bar " + (validation.errors.length ? "offline" : "success");
         statusBar.textContent = validation.errors.length
@@ -140,6 +150,14 @@
       g.appendChild(label);
       g.appendChild(input);
       formArea.appendChild(g);
+    });
+
+    // تفعيل زر الحذف
+    document.getElementById("deleteResourceBtn").addEventListener("click", () => {
+      state.resources.splice(state.activeResourceIdx, 1);
+      state.activeResourceIdx = Math.max(0, state.activeResourceIdx - 1);
+      renderAll();
+      toast("Resource deleted");
     });
   }
 
@@ -182,24 +200,24 @@
       return;
     }
     const boxes = state.resources.map((r, i) => {
-      const x = 20 + i * 180;
-      return `<rect class="box" x="${x}" y="40" width="140" height="60" rx="10" />
-              <text class="box-text" x="${x + 70}" y="75">${RESOURCES[r.id].label}</text>`;
+      const x = 10 + i * 160;
+      return `<rect class="box" x="${x}" y="10" width="140" height="50" rx="8" />
+              <text class="box-text" x="${x + 70}" y="40">${RESOURCES[r.id].label}</text>`;
     }).join("");
 
     const arrows = state.resources.slice(1).map((_, i) => {
-      const x1 = 20 + i * 180 + 140;
-      const x2 = 20 + (i + 1) * 180;
-      return `<path class="arrow" d="M${x1} 70 L${x2} 70" />`;
+      const x1 = 10 + i * 160 + 140;
+      const x2 = 10 + (i + 1) * 160;
+      return `<path class="arrow" d="M${x1} 35 L${x2} 35" />`;
     }).join("");
 
-    const width = Math.max(300, 20 + state.resources.length * 180);
+    const width = Math.max(300, 10 + state.resources.length * 160);
 
     archMapEl.innerHTML = `
-      <svg viewBox="0 0 ${width} 160" xmlns="http://www.w3.org/2000/svg">
+      <svg viewBox="0 0 ${width} 70" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" fill="var(--text-muted)" />
+          <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="var(--text-muted)" />
           </marker>
         </defs>
         ${boxes}
@@ -207,7 +225,6 @@
       </svg>`;
   }
 
-  // دالة ذكية لتحديث أمر الـ Terminal بناءً على اسم المورد
   function updateDynamicCommand() {
     const rp = state.resources.find(r => r.id === "random_password");
     const targetName = rp ? `${rp.fields.name}_password` : "db_password_password";
@@ -235,7 +252,7 @@
     renderPreview();
     renderStats(validation);
     renderArchMap();
-    updateDynamicCommand(); // استدعاء الدالة عند التحديث
+    updateDynamicCommand();
 
     statusBar.className = "status-bar " + (validation.errors.length ? "offline" : "success");
     statusBar.textContent = validation.errors.length
@@ -366,10 +383,7 @@
       const ok = decodeState(hash.slice(4));
       if (ok) toast("Loaded shared configuration");
     }
-    if (state.resources.length === 0) {
-      state.resources.push({ id: "random_password", fields: defaultFields("random_password") });
-      state.unlockedTypes.add("random_password");
-    }
+    // تم إزالة الكود الذي يضيف كلمة المرور تلقائياً
     renderAll();
     updateStatusForNetwork();
   }

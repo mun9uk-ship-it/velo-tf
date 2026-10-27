@@ -167,6 +167,21 @@ p { margin: 0 0 0.75rem; }
   box-shadow: 0 0 0 3px var(--primary-soft);
 }
 
+/* Delete Button */
+.delete-btn {
+  background: transparent;
+  color: var(--warning);
+  border: 1px solid var(--warning);
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.delete-btn:hover {
+  background: rgba(245,166,35,0.1);
+}
+
 /* === File tabs === */
 .file-tabs {
   display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.6rem;
@@ -251,10 +266,11 @@ p { margin: 0 0 0.75rem; }
 .stat-label { font-size: 0.75rem; color: var(--text-secondary); }
 
 /* === Architecture map === */
-.arch-map svg { width: 100%; height: auto; display: block; }
-.arch-map .box { fill: var(--card); stroke: var(--primary); stroke-width: 1.5; }
-.arch-map .box-text { fill: var(--text); font-size: 11px; text-anchor: middle; font-family: Inter, sans-serif; }
-.arch-map .arrow { stroke: var(--text-muted); stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+.arch-map { max-width: 100%; display: flex; justify-content: flex-start; }
+.arch-map svg { width: 100%; max-height: 120px; display: block; }
+.arch-map .box { fill: var(--card); stroke: var(--primary); stroke-width: 2; }
+.arch-map .box-text { fill: var(--text); font-size: 12px; text-anchor: middle; font-family: Inter, sans-serif; font-weight: 600; }
+.arch-map .arrow { stroke: var(--text-muted); stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
 
 /* === Footer === */
 .site-footer {
