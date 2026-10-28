@@ -456,3 +456,50 @@ p { margin: 0 0 0.75rem; }
   .action-btn { flex: 1 1 100%; }
   .instruction-step { flex-direction: column; gap: 0.4rem; }
 }
+
+/* ... (باقي الكود في الأعلى يبقى كما هو) ... */
+
+/* === Header (Fixed / Sticky) === */
+.site-header {
+  text-align: center;
+  padding: 1.5rem 1rem;
+  border-bottom: 1px solid var(--border);
+  /* التثبيت هنا */
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 50;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+.site-header h1 { font-size: 2rem; margin-bottom: 0.2rem; }
+.accent { color: var(--primary); }
+.tagline { color: var(--text-secondary); font-size: 0.95rem; margin: 0; }
+
+/* New Header Link Style (Improved) */
+.header-link {
+  display: inline-block;
+  font-size: 0.9rem;
+  color: var(--primary);
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  margin-bottom: 0.5rem;
+  padding: 0.3rem 0.8rem;
+  background: var(--primary-soft);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(124, 111, 255, 0.3);
+  /* المسافة بين الحروف */
+  letter-spacing: 2px; 
+  font-weight: 600;
+}
+
+/* === Theme toggle (Adjusted to avoid overlapping header) === */
+.theme-toggle {
+  position: fixed; top: 16px; right: 16px;
+  width: 48px; height: 48px; border-radius: var(--radius-sm);
+  background: var(--card); color: var(--text);
+  border: 1px solid var(--border);
+  font-size: 1.2rem; cursor: pointer; z-index: 100;
+  transition: all var(--transition);
+}
+.theme-toggle:hover { background: var(--card-hover); border-color: var(--primary); }
+
+/* ... (باقي الكود في الأسفل يبقى كما هو) ... */
